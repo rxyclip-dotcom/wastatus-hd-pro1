@@ -1,3 +1,4 @@
+
 name: Build WA Status HD Pro Release APK
 
 on:
@@ -15,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout source code
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -24,15 +25,20 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Accept Android SDK licenses
-        run: |
-          yes | sdkmanager --licenses || true
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Install Android SDK packages
         run: |
-          sdkmanager "platform-tools"
-          sdkmanager "platforms;android-35"
-          sdkmanager "build-tools;35.0.0"
+          export ANDROID_HOME="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+
+          yes | sdkmanager --licenses || true
+
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4

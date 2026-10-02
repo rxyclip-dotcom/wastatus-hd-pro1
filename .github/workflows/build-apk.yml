@@ -35,12 +35,35 @@ jobs:
         with:
           gradle-version: "8.10.2"
 
-      - name: Build APK
+      - name: Create release signing key
+        run: |
+          keytool -genkeypair -v \
+            -keystore "$RUNNER_TEMP/wa-status-hd-release.jks" \
+            -storepass "WAStatusHD-Release-2026" \
+            -alias "wastatushd" \
+            -keypass "WAStatusHD-Release-2026" \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=WA Status HD Pro, OU=Mobile, O=WA Status HD Pro, L=Indonesia, C=ID"
+
+      - name: Build signed release APK
+        env:
+          RELEASE_STORE_FILE: ${{ runner.temp }}/wa-status-hd-release.jks
+          RELEASE_STORE_PASSWORD: WAStatusHD-Release-2026
+          RELEASE_KEY_ALIAS: wastatushd
+          RELEASE_KEY_PASSWORD: WAStatusHD-Release-2026
         run: gradle assembleRelease --stacktrace
+
+      - name: Prepare APK
+        run: |
+          mkdir -p release
+          cp app/build/outputs/apk/release/*.apk \
+             release/WAStatusHD-Pro-v2.0-release.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: WAStatusHD-Pro-release
-          path: app/build/outputs/apk/release/*.apk
+          name: WAStatusHD-Pro-v2.0-release
+          path: release/WAStatusHD-Pro-v2.0-release.apk
           if-no-files-found: error

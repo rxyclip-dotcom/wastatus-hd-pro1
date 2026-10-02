@@ -24,14 +24,15 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Accept Android SDK licenses
+        run: |
+          yes | sdkmanager --licenses || true
 
       - name: Install Android SDK packages
         run: |
           sdkmanager "platform-tools"
           sdkmanager "platforms;android-35"
-          sdkmanager "build-tools;35.0.0" 
+          sdkmanager "build-tools;35.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -56,12 +57,14 @@ jobs:
           RELEASE_STORE_PASSWORD: WAStatusHD-Release-2026
           RELEASE_KEY_ALIAS: wastatushd
           RELEASE_KEY_PASSWORD: WAStatusHD-Release-2026
-        run: gradle assembleRelease --stacktrace
+        run: |
+          gradle assembleRelease --stacktrace
 
       - name: Prepare APK
         run: |
           mkdir -p release
-          cp app/build/outputs/apk/release/*.apk release/WAStatusHD-Pro-v2.0-release.apk
+          cp app/build/outputs/apk/release/*.apk \
+            release/WAStatusHD-Pro-v2.0-release.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
